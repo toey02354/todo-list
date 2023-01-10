@@ -16,9 +16,9 @@ app.use(express.urlencoded());
 app.use(express.json());
 app.use(express.static("./frontend/dist"));
 
-app.get("/api/todo", (req, res) => {
+app.get("/api/todo", async (req, res) => {
   try {
-    const todos = ToDos.find();
+    const todos = await ToDos.find({});
     return res.json(todos);
   } catch (error) {
     return res.send("no todos");
