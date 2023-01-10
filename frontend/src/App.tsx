@@ -39,8 +39,6 @@ function App() {
     setCurrentTodo(todo);
   };
 
-  const handleDelete = () => {};
-
   const handleResetTodo = () => {
     console.log("clear");
     setCurrentTodo(defaultTodo);
@@ -55,8 +53,11 @@ function App() {
 
   const handleCallAPI = async (
     method: string,
+    _id?: string,
     body?: BodyInit | null | undefined
   ) => {
+    let apiEndPoint = _id ? path + "/" + _id : path;
+
     let options = {
       method,
       headers: {
@@ -68,7 +69,7 @@ function App() {
       Object.assign(options, { body });
     }
 
-    await fetch(path + "/" + currentTodo._id, options)
+    await fetch(apiEndPoint, options)
       .then((res) => {
         console.log(res);
       })
@@ -96,6 +97,7 @@ function App() {
     if (currentTodo._id.length > 0) {
       await handleCallAPI(
         "PUT",
+        currentTodo._id,
         JSON.stringify({
           ...currentTodo,
           updated: new Date().toString(),
@@ -113,6 +115,10 @@ function App() {
     }
   };
 
+  const handleDelete = async (_id: string) => {
+    await handleCallAPI("DELETE", _id);
+  };
+
   useEffect(() => {
     getTodos();
   }, []);
@@ -126,7 +132,7 @@ function App() {
             <div className="card-button" onClick={() => handleEditTodo(todo)}>
               edit
             </div>
-            <div className="card-button" onClick={handleDelete}>
+            <div className="card-button" onClick={() => handleDelete(todo._id)}>
               delete
             </div>
           </div>
