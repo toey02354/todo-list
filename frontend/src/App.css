@@ -50,9 +50,21 @@
   margin-bottom: 1rem;
   border-radius: 0.25rem;
 }
-.todo-submit {
-  padding: 0.5rem 0;
-  border-radius: 0.5rem;
+.button-group {
+  display: flex;
+  /* flex: 1; */
+  gap: 1rem;
+  padding: 0 1rem;
+}
+.button-group button {
+  width: 100%;
+}
+.button-group button:nth-child(1) {
+  background-color: rgb(94, 146, 94);
+}
+
+.todo-submit:hover {
+  border: 1px solid red;
 }
 .todo-label {
   text-align: left;
@@ -91,6 +103,10 @@
   justify-content: space-between;
   cursor: pointer;
 }
+.card-button:hover {
+  color: rgb(39, 84, 124);
+}
+
 .todo-card-title {
   font-size: 3em;
   margin: 0.5rem;

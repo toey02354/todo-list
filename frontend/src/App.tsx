@@ -35,31 +35,15 @@ function App() {
       });
   };
 
-  useEffect(() => {
-    getTodos();
-  }, []);
-
   const handleEditTodo = (todo: ITodo) => {
-    console.log(todo);
     setCurrentTodo(todo);
   };
 
   const handleDelete = () => {};
 
-  const ToDoCard = (todo: ITodo, index: number) => {
-    return (
-      <span className="todo-card" key={`todo-${index}`}>
-        <div className="todo-card-head">
-          <div className="card-number">{index}</div>
-          <div className="card-manage">
-            <div onClick={() => handleEditTodo(todo)}>edit</div>
-            <div onClick={handleDelete}>delete</div>
-          </div>
-        </div>
-        <h1 className="todo-card-title">{todo.title}</h1>
-        <p className="todo-card-content">{todo.content}</p>
-      </span>
-    );
+  const handleResetTodo = () => {
+    console.log("clear");
+    setCurrentTodo(defaultTodo);
   };
 
   const handleInputTitle = (title: string) => {
@@ -69,8 +53,36 @@ function App() {
     setCurrentTodo((currTodo) => ({ ...currTodo, content }));
   };
 
-  const handleSubmitTodo = async (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
+  const handleCallAPI = async (
+    method: string,
+    body?: BodyInit | null | undefined
+  ) => {
+    let options = {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+      },
+    };
+
+    if (body != null || undefined) {
+      Object.assign(options, { body });
+    }
+
+    await fetch(path + "/" + currentTodo._id, options)
+      .then((res) => {
+        console.log(res);
+      })
+      .catch((err) => {
+        console.log(err);
+      })
+      .finally(() => {
+        getTodos();
+        setIsLoading(false);
+        handleResetTodo();
+      });
+  };
+
+  const handleSubmitTodo = async () => {
     setIsLoading(true);
     if (
       !currentTodo.title ||
@@ -82,29 +94,53 @@ function App() {
     console.log(todos);
 
     if (currentTodo._id.length > 0) {
-      await fetch(path + "/" + currentTodo._id, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(currentTodo),
-      })
-        .then((res) => {
-          console.log(res);
+      await handleCallAPI(
+        "PUT",
+        JSON.stringify({
+          ...currentTodo,
+          updated: new Date().toString(),
         })
-        .finally(() => {
-          getTodos();
-          setIsLoading(false);
-        });
+      );
     } else {
-      setIsLoading(false);
+      await handleCallAPI(
+        "POST",
+        JSON.stringify({
+          ...currentTodo,
+          updated: new Date().toString(),
+          created: new Date().toString(),
+        })
+      );
     }
+  };
+
+  useEffect(() => {
+    getTodos();
+  }, []);
+
+  const ToDoCard = (todo: ITodo, index: number) => {
+    return (
+      <span className="todo-card" key={`todo-${index}`}>
+        <div className="todo-card-head">
+          <div className="card-number">{index + 1}</div>
+          <div className="card-manage">
+            <div className="card-button" onClick={() => handleEditTodo(todo)}>
+              edit
+            </div>
+            <div className="card-button" onClick={handleDelete}>
+              delete
+            </div>
+          </div>
+        </div>
+        <h1 className="todo-card-title">{todo.title}</h1>
+        <p className="todo-card-content">{todo.content}</p>
+      </span>
+    );
   };
 
   return (
     <div className="App">
       <h1>To Do! today</h1>
-      <form className="todo-form" onSubmit={(e) => handleSubmitTodo(e)}>
+      <div className="todo-form">
         <label htmlFor="title" className="todo-label">
           (To do) Title
         </label>
@@ -129,13 +165,26 @@ function App() {
           value={currentTodo.content}
           onChange={(e) => handleInputContent(e.target.value)}
         />
-        <input
-          type="submit"
-          value="Submit Todo"
+      </div>
+      <div className="button-group">
+        <button
           className="todo-submit"
           disabled={isLoading}
-        />
-      </form>
+          onClick={handleSubmitTodo}
+        >
+          {currentTodo._id.length > 0 ? "Edit Todo" : "Create Todo"}
+        </button>
+        <button
+          onClick={handleResetTodo}
+          disabled={
+            currentTodo._id.length == 0 &&
+            currentTodo.title.length == 0 &&
+            currentTodo.content.length == 0
+          }
+        >
+          Reset
+        </button>
+      </div>
       <div className="todo-card-container">
         {todos.length > 0
           ? todos.map((todo, index) => ToDoCard(todo, index))
