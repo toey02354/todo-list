@@ -1,4 +1,4 @@
-import { useState, useEffect, FormEvent } from "react";
+import { useState, useEffect, useRef } from "react";
 import "./App.css";
 
 interface ITodo {
@@ -18,11 +18,14 @@ const defaultTodo: ITodo = {
 };
 
 const path = "http://localhost:4000/api/todo";
+// const path = "https://fine-plum-colt-robe.cyclic.app/api/todo";
 
 function App() {
   const [currentTodo, setCurrentTodo] = useState<ITodo>(defaultTodo);
   const [todos, setTodos] = useState<ITodo[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  // const [searchTerm, setSearchTerm] = useState<string>("");
+  const searchRef = useRef<HTMLInputElement>(null);
 
   const getTodos = async () => {
     await fetch(path)
@@ -35,12 +38,11 @@ function App() {
       });
   };
 
-  const handleEditTodo = (todo: ITodo) => {
+  const handleEdit = (todo: ITodo) => {
     setCurrentTodo(todo);
   };
 
-  const handleResetTodo = () => {
-    console.log("clear");
+  const handleReset = () => {
     setCurrentTodo(defaultTodo);
   };
 
@@ -53,7 +55,7 @@ function App() {
 
   const handleCallAPI = async (
     method: string,
-    _id?: string,
+    _id?: string | undefined,
     body?: BodyInit | null | undefined
   ) => {
     let apiEndPoint = _id ? path + "/" + _id : path;
@@ -69,21 +71,14 @@ function App() {
       Object.assign(options, { body });
     }
 
-    await fetch(apiEndPoint, options)
-      .then((res) => {
-        console.log(res);
-      })
-      .catch((err) => {
-        console.log(err);
-      })
-      .finally(() => {
-        getTodos();
-        setIsLoading(false);
-        handleResetTodo();
-      });
+    await fetch(apiEndPoint, options).finally(() => {
+      getTodos();
+      setIsLoading(false);
+      handleReset();
+    });
   };
 
-  const handleSubmitTodo = async () => {
+  const handleSubmit = async () => {
     setIsLoading(true);
     if (
       !currentTodo.title ||
@@ -92,7 +87,6 @@ function App() {
       currentTodo.content.trim().length === 0
     )
       return alert("title or content is empty");
-    console.log(todos);
 
     if (currentTodo._id.length > 0) {
       await handleCallAPI(
@@ -100,16 +94,18 @@ function App() {
         currentTodo._id,
         JSON.stringify({
           ...currentTodo,
-          updated: new Date().toString(),
+          updated: Date.now().toString(),
         })
       );
     } else {
       await handleCallAPI(
         "POST",
+        undefined,
         JSON.stringify({
-          ...currentTodo,
-          updated: new Date().toString(),
-          created: new Date().toString(),
+          title: currentTodo.title,
+          content: currentTodo.content,
+          updated: Date.now().toString(),
+          created: Date.now().toString(),
         })
       );
     }
@@ -117,6 +113,27 @@ function App() {
 
   const handleDelete = async (_id: string) => {
     await handleCallAPI("DELETE", _id);
+  };
+
+  const handleSearch = async () => {
+    if (searchRef.current) {
+      setIsLoading(true);
+      const url = path + `?searchTerm=${searchRef.current.value}`;
+      await fetch(url, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      })
+        .then((res) => res.json())
+        .then((res) => setTodos(res))
+        .catch((err) => {
+          console.log(err);
+        })
+        .finally(() => {
+          setIsLoading(false);
+        });
+    }
   };
 
   useEffect(() => {
@@ -129,7 +146,7 @@ function App() {
         <div className="todo-card-head">
           <div className="card-number">{index + 1}</div>
           <div className="card-manage">
-            <div className="card-button" onClick={() => handleEditTodo(todo)}>
+            <div className="card-button" onClick={() => handleEdit(todo)}>
               edit
             </div>
             <div className="card-button" onClick={() => handleDelete(todo._id)}>
@@ -145,7 +162,7 @@ function App() {
 
   return (
     <div className="App">
-      <h1>To Do! today</h1>
+      <h1>To Do!</h1>
       <div className="todo-form">
         <label htmlFor="title" className="todo-label">
           (To do) Title
@@ -176,12 +193,12 @@ function App() {
         <button
           className="todo-submit"
           disabled={isLoading}
-          onClick={handleSubmitTodo}
+          onClick={handleSubmit}
         >
           {currentTodo._id.length > 0 ? "Edit Todo" : "Create Todo"}
         </button>
         <button
-          onClick={handleResetTodo}
+          onClick={handleReset}
           disabled={
             currentTodo._id.length == 0 &&
             currentTodo.title.length == 0 &&
@@ -189,6 +206,20 @@ function App() {
           }
         >
           Reset
+        </button>
+      </div>
+      <hr />
+      <div className="search-wrapper">
+        <input
+          className="search-input"
+          type="text"
+          name="searchTerm"
+          id="searchTerm"
+          placeholder="search to do by (exact) title"
+          ref={searchRef}
+        />
+        <button className="search-button" onClick={handleSearch}>
+          Search
         </button>
       </div>
       <div className="todo-card-container">

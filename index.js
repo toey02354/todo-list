@@ -17,9 +17,15 @@ app.use(express.json());
 app.use(express.static("./frontend/dist"));
 
 app.get("/api/todo", async (req, res) => {
+  const searchTerm = req.query.searchTerm;
   try {
-    const todos = await ToDos.find({});
-    return res.json(todos);
+    if (searchTerm) {
+      const todos = await ToDos.find({ title: searchTerm }).exec();
+      return res.json(todos);
+    } else {
+      const todos = await ToDos.find();
+      return res.json(todos);
+    }
   } catch (error) {
     return res.send("no todos");
   }
