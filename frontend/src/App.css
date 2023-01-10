@@ -32,10 +32,27 @@
   }
 }
 
-.card {
-  padding: 2em;
+.App {
+  max-width: 800px;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
-.read-the-docs {
-  color: #888;
+.todo-form {
+  display: flex;
+  flex-direction: column;
+}
+.todo-input {
+  padding: 0.5rem 1rem;
+  margin-bottom: 1rem;
+  border-radius: 0.25rem;
+}
+.todo-label {
+  text-align: left;
+}
+.todo-card-container {
+  margin-top: 1rem;
 }

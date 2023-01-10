@@ -1,34 +1,66 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import './App.css'
+import { useState } from "react";
+import "./App.css";
+
+interface ITodo {
+  id: string;
+  title: string;
+  content: string;
+  created: string;
+  updated: string;
+}
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [currentTodo, setCurrentTodo] = useState<ITodo>();
+  const [todos, setTodos] = useState<ITodo[]>([]);
+
+  const ToDoCard = (todo: ITodo, index: number) => {
+    return (
+      <div className="todo-card">
+        <p className="todo-card-title">
+          {index + 1} {todo.title}
+        </p>
+        <p className="todo-card-content">{todo.content}</p>
+      </div>
+    );
+  };
+
+  const handleSubmitTodo = () => {};
 
   return (
     <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+      <h1>To Do! today</h1>
+      <form className="todo-form" onSubmit={handleSubmitTodo}>
+        <label htmlFor="title" className="todo-label">
+          (To do) Title
+        </label>
+        <input
+          type="text"
+          name="title"
+          id="title"
+          className="todo-input"
+          placeholder="today goal"
+        />
+        <label htmlFor="content" className="todo-label">
+          What to do
+        </label>
+        <input
+          type="text"
+          name="content"
+          id="content"
+          className="todo-input"
+          placeholder="I will run 10 km"
+        />
+        <button type="submit" onClick={handleSubmitTodo}>
+          submit todo
         </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+      </form>
+      <div className="todo-card-container">
+        {todos.length > 0
+          ? todos.map((todo, index) => ToDoCard(todo, index))
+          : "there is no to do..!!"}
       </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
     </div>
-  )
+  );
 }
 
-export default App
+export default App;
