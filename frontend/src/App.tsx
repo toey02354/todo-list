@@ -22,27 +22,43 @@ const path = "http://localhost:4000/api/todo";
 function App() {
   const [currentTodo, setCurrentTodo] = useState<ITodo>(defaultTodo);
   const [todos, setTodos] = useState<ITodo[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    fetch(path)
+  const getTodos = async () => {
+    await fetch(path)
       .then((res) => res.json())
       .then((data: ITodo[]) => {
-        console.log(data);
         setTodos(data);
       })
       .catch((err) => {
         console.log(err);
       });
+  };
+
+  useEffect(() => {
+    getTodos();
   }, []);
+
+  const handleEditTodo = (todo: ITodo) => {
+    console.log(todo);
+    setCurrentTodo(todo);
+  };
+
+  const handleDelete = () => {};
 
   const ToDoCard = (todo: ITodo, index: number) => {
     return (
-      <div className="todo-card" key={`todo-${index}`}>
-        <p className="todo-card-title">
-          {index + 1} {todo.title}
-        </p>
+      <span className="todo-card" key={`todo-${index}`}>
+        <div className="todo-card-head">
+          <div className="card-number">{index}</div>
+          <div className="card-manage">
+            <div onClick={() => handleEditTodo(todo)}>edit</div>
+            <div onClick={handleDelete}>delete</div>
+          </div>
+        </div>
+        <h1 className="todo-card-title">{todo.title}</h1>
         <p className="todo-card-content">{todo.content}</p>
-      </div>
+      </span>
     );
   };
 
@@ -53,8 +69,9 @@ function App() {
     setCurrentTodo((currTodo) => ({ ...currTodo, content }));
   };
 
-  const handleSubmitTodo = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmitTodo = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
+    setIsLoading(true);
     if (
       !currentTodo.title ||
       !currentTodo.content ||
@@ -63,6 +80,25 @@ function App() {
     )
       return alert("title or content is empty");
     console.log(todos);
+
+    if (currentTodo._id.length > 0) {
+      await fetch(path + "/" + currentTodo._id, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(currentTodo),
+      })
+        .then((res) => {
+          console.log(res);
+        })
+        .finally(() => {
+          getTodos();
+          setIsLoading(false);
+        });
+    } else {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -78,6 +114,7 @@ function App() {
           id="title"
           className="todo-input"
           placeholder="today goal"
+          value={currentTodo.title}
           onChange={(e) => handleInputTitle(e.target.value)}
         />
         <label htmlFor="content" className="todo-label">
@@ -89,9 +126,15 @@ function App() {
           id="content"
           className="todo-input"
           placeholder="I will run 10 km"
+          value={currentTodo.content}
           onChange={(e) => handleInputContent(e.target.value)}
         />
-        <input type="submit" value="Submit Todo" />
+        <input
+          type="submit"
+          value="Submit Todo"
+          className="todo-submit"
+          disabled={isLoading}
+        />
       </form>
       <div className="todo-card-container">
         {todos.length > 0
