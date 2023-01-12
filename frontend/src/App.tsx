@@ -140,7 +140,12 @@ function App() {
     getTodos();
   }, []);
 
-  const ToDoCard = (todo: ITodo, index: number) => {
+  interface IToDoCard {
+    todo: ITodo
+    index: number
+  }
+
+  const ToDoCard = ({todo, index}: IToDoCard) => {
     return (
       <span className="todo-card" key={`todo-${index}`}>
         <div className="todo-card-head">
@@ -224,7 +229,8 @@ function App() {
       </div>
       <div className="todo-card-container">
         {todos.length > 0
-          ? todos.map((todo, index) => ToDoCard(todo, index))
+          // ? todos.map((todo, index) => ToDoCard(todo, index))
+          ? todos.map((todo, index) => <ToDoCard todo={todo} index={index} ></ToDoCard>)
           : "there is no to do..!!"}
       </div>
     </div>
