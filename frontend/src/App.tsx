@@ -17,6 +17,11 @@ const defaultTodo: ITodo = {
   updated: "",
 };
 
+interface IToDoCard {
+  todo: ITodo
+  index: number
+}
+
 // const path = "http://localhost:4000/api/todo";
 const path = "https://fine-plum-colt-robe.cyclic.app/api/todo";
 
@@ -139,11 +144,6 @@ function App() {
   useEffect(() => {
     getTodos();
   }, []);
-
-  interface IToDoCard {
-    todo: ITodo
-    index: number
-  }
 
   const ToDoCard = ({todo, index}: IToDoCard) => {
     return (
