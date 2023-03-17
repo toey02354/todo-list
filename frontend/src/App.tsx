@@ -23,7 +23,7 @@ interface IToDoCard {
 }
 
 // const path = "http://localhost:4000/api/todo";
-const path = "https://fine-plum-colt-robe.cyclic.app/api/todo";
+const path = "https://jungle-green-squirrel-cuff.cyclic.app/api/todo";
 
 function App() {
   const [currentTodo, setCurrentTodo] = useState<ITodo>(defaultTodo);
